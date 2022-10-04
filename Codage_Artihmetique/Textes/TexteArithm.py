@@ -3,7 +3,13 @@
 
 import numpy as np
 
-file = open('message.txt', 'r')
+
+
+fileName="Codage_Predictif/textes/ABC.txt"
+#fileName="Codage_Predictif/textes/randomText.txt"
+#fileName="Codage_Predictif/textes/BeeMovieScript.txt"
+file = open(fileName)
+
 message = file.read()
 SymbACoder = 6
 
