@@ -5,9 +5,9 @@ import numpy as np
 
 
 
-fileName="Codage_Predictif/textes/ABC.txt"
-#fileName="Codage_Predictif/textes/randomText.txt"
-#fileName="Codage_Predictif/textes/BeeMovieScript.txt"
+fileName="Codage_Arithmetique/textes/ABC.txt"
+#fileName="Codage_Arithmetique/textes/randomText.txt"
+#fileName="Codage_Arithmetique/textes/BeeMovieScript.txt"
 file = open(fileName)
 
 message = file.read()
