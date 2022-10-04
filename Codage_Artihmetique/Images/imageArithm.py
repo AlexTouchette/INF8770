@@ -1,3 +1,6 @@
+# Algorithm arithmétique provenant du cours INF8770 Technologie Multimédia
+# https://github.com/gabilodeau/INF8770/blob/master/Codage%20arithmetique.ipynb
+
 import numpy as np
 import matplotlib.pyplot as py
 
