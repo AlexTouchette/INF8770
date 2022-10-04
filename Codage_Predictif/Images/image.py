@@ -13,6 +13,8 @@ image=imagelue.astype('float')
 image=rgb2gray(image)
 py.imsave("Codage_Predictif\Images\pluton_gray.jpg",image,cmap = py.get_cmap('gray'))
 
+print(image)
+print(len(image))
 matpred = [[0.33,0.33],[0.33,0.0]]
 
 erreur = np.zeros((len(image)-2,len(image[0])-2))

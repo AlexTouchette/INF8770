@@ -19,11 +19,11 @@ def decode(compressed_text,num_list):
 
 # path to deferent txt files
 
-#file_name="Codage_Predictif/textes/ABC.txt"
-#file_name="Codage_Predictif/textes/randomText.txt"
-fileName="Codage_Predictif/textes/BeeMovieScript.txt"
+fileName="Codage_Predictif/textes/ABC.txt"
+#fileName="Codage_Predictif/textes/randomText.txt"
+#fileName="Codage_Predictif/textes/BeeMovieScript.txt"
 compressedText=[]
-
+numList=[]
 
 # open file  and store it's different lines in a list
 file = open(fileName)
@@ -32,7 +32,8 @@ lines = file.readlines()
 
 # read text file and change every character to number
 for line in lines:
-    numList = [ord(char) for char in line]
+    for char in line:
+        numList.append(ord(char)) 
 
 
 # create a file with containing the original text but converted to number
@@ -41,7 +42,7 @@ fp= open(r'Codage_Predictif/textes/TextNum.txt', 'w')
 for num in numList :
     fp.write(str(num))
 
-
+print(len(numList))
 # put first number of num_list on compressed_text list since it is unchanged 
 compressedText.append(numList[0])
 
