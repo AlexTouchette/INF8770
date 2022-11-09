@@ -8,7 +8,9 @@ def get_frames(start_time, end_time):
     success=True
     
     # read video 
-    vidcap = cv.VideoCapture('TP2/bouncing_dvd_logo_1.mp4') 
+    #vidcap = cv.VideoCapture('TP2/bouncing_dvd_logo_1.mp4') 
+    #vidcap = cv.VideoCapture('TP2/test.mp4')
+    vidcap = cv.VideoCapture('TP2/bouncing_ball.mp4') 
 
     # get number of frames per sec ()
     fps = vidcap.get(cv.CAP_PROP_FPS)
@@ -32,6 +34,7 @@ def get_frames(start_time, end_time):
 
 # get frames from 0.0 to 0.5 sec
 #get_frames(0.0,0.5)
+#get_frames(7.0,7.5)
 
 # get frames from 3.0 to 3.5 sec
 #get_frames(3.0,3.5)
@@ -52,10 +55,12 @@ class Macroblock:
         self.b2 = b2
         self.b3 = b3
 
-for i in range(15):
-    frame = cv.imread("TP2/FrameSeq1/frame%d.jpg" % i) 
+for i in range(210,225):
+    #frame = cv.imread("TP2/FrameSeq1/frame%d.jpg" % i) 
+    #frame = cv.imread("TP2/test/frame%d.jpg" % i) 
+    frame = cv.imread("TP2/framesTest/frame%d.jpg" % i) 
     frames.append(frame)
-   
+
 def compare_macroblocks(index,x,y):
     h = frames[index].shape[0]
     w = frames[index].shape[1]
@@ -65,20 +70,36 @@ def compare_macroblocks(index,x,y):
     # result1 = sum(DMaMb1[0][0])
     # print("result1",result1)
     # if result1==0:return (0,0) 
-    
-    for vx in range(-4,4):
-        for vy in range(-4,4):
-            if((x+16+vx<w and y+16+vy<h)and (x+vx>0 and y+vy>0)):
-                DMaMb = frames[index][x:x+16, y:y+16] - frames[index-1][x+vx:x+16+vx, y+vy:y+16+vy]
-                result = sum(DMaMb[vx][vx])
-                print('result',result)
-                #print(DMaMb)
-                if result <800: 
-                    return (vx,vy) 
-                else:
-                    print("X : ",x," Y : ",y)
-                    #print(DMaMb)
+   
+    diff_current = cv.subtract(frames[index][x:x+16, y:y+16],frames[index-1][x:x+16, y:y+16]) 
+    err_current = np.sum(diff_current**2)
+    mse_current = err_current/(float(h*w))
+    for vx in range(1,6):
+        for vy in range(1,6):
+            if((x+16+vx<w and y+16+vy<h)):
+                print('x et y',vx,vy)
+                
+                diff = cv.subtract(frames[index][x:x+16, y:y+16],frames[index-1][x+vx:x+16+vx, y+vy:y+16+vy])
+                err = np.sum(diff**2)
+                mse = err/(float(h*w))
+                print('mse',mse)
+                print('MSE CURRENT',mse_current)
+                if mse < mse_current :
+                    return(vx,vy)
 
+ 
+        #         DMaMb = frames[index][x:x+16, y:y+16] - frames[index-1][x+vx:x+16+vx, y+vy:y+16+vy]
+        #         result = sum(DMaMb[vx][vx])
+        #         print('result',result)
+        #         #print(DMaMb)
+        #         if result <4: 
+        #             print('less then')
+        #             return (vx,vy) 
+        #         else:
+        #             print("X : ",x," Y : ",y)
+        #             return (vx,vy)
+        #             #print(DMaMb)
+        # return (vx,vy)
 #print(compare_macroblocks(1,0,1)) 
 
 def get_macroblocks(image, index):
