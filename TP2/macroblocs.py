@@ -59,32 +59,46 @@ class Macroblock:
 
 ################################## GET MACROBLOCK VECTORS ####################################
 def compare_macroblocks(index,x,y):
+    
+    # hauteur et largeur de l'image
     h = frames[index].shape[0]
     w = frames[index].shape[1]
-   
+    
+    # calcul de l'erreur quadratique entre 
+    # le marcoblock de la trame t et celui de la trame t-1 à la meme position
     diff_current = cv.subtract(frames[index][x:x+16, y:y+16],frames[index-1][x:x+16, y:y+16]) 
     err_current = np.sum(diff_current**2)
     mse_current = err_current/(float(h*w))
     
     min_mse = mse_current
     vector = (0,0)
+    diff_block=diff_current 
+    
+    # déplace dans la trame t-1 dans un rayon de 6 pixels 
     for vx in range(-6,6):
         for vy in range(-6,6):
+            
+            # vérifier que la zone de recherche ne dépace pas l'hauteur et la largeur de la trame
             if((x+16+vx<w and y+16+vy<h)and (x+vx>0 and y+vy>0)):
+
+                # vérifier que les deux marcoblock à comparer ont la meme taille 
                 if len(frames[index][x:x+16, y:y+16]) == len(frames[index-1][x+vx:x+16+vx, y+vy:y+16+vy]) :
+                    
+                    # calcul de l'erreur quadratique 
                     diff = cv.subtract(frames[index][x:x+16, y:y+16],frames[index-1][x+vx:x+16+vx, y+vy:y+16+vy])
                     err = np.sum(diff**2)
                     mse = err/(float(h*w))
                     
+                    # recherche du meilleur macroblock correcpendant
+                    # (erreur quadratique la plus faible )
                     if mse < min_mse :
-                        # print('x et y',vx,vy)
-                        # print('mse',mse)
-                        # print('MSE min',min_mse)
                         min_mse = mse
                         vector = (vx,vy)
-                        # print('VECTOR', vector)
+                        diff_block = diff 
+                       
                  
-    return vector
+    return vector, diff_block
+
 
 ################################## CREATE MACROBLOCKS ####################################
 
@@ -109,23 +123,29 @@ def get_macroblocks(image, index):
 
             # Définition du vx et vy:
             # Still need to figure that out lol
-            vector = compare_macroblocks(index,x,y)
-            print(vector)
+            vector, diff_block = compare_macroblocks(index,x,y)
+            
             vx = vector[0]
             vy = vector[1]
 
+            # Définition des 4 blocs Y:
+            b0 = diff_block[0:deltaMoitier, 0:deltaMoitier]                          # Coin supérieur gauche à milieu
+            b1 = diff_block[deltaMoitier:deltaPlein, 0:deltaMoitier]               # Milieu haut à milieu droit
+            b2 = diff_block[0:deltaMoitier, deltaMoitier:deltaPlein]               # Milieu gauche à milieu bas
+            b3 = diff_block[deltaMoitier:deltaPlein, deltaMoitier:deltaPlein]    # Milieu à coin inférieur droit
+
             # Définition du CPB (4:0:0):
             #J'ai mit 4 pour l'instant mais je suis vraiment pas certain
-            imgYCC = 4
 
-            # Définition des 4 blocs Y:
-            b0 = image[x:x+deltaMoitier, y:y+deltaMoitier]                          # Coin supérieur gauche à milieu
-            b1 = image[x+deltaMoitier:x+deltaPlein, y:y+deltaMoitier]               # Milieu haut à milieu droit
-            b2 = image[x:x+deltaMoitier, y+deltaMoitier:y+deltaPlein]               # Milieu gauche à milieu bas
-            b3 = image[x+deltaMoitier:x+deltaPlein, y+deltaMoitier:y+deltaPlein]    # Milieu à coin inférieur droit
+            bit1 = 1 if all((element == [0,0,0]).all() for element in b0) else 0
+            bit2 = 1 if all((element == [0,0,0]).all() for element in b1) else 0
+            bit3 = 1 if all((element == [0,0,0]).all() for element in b2) else 0
+            bit4 = 1 if all((element == [0,0,0]).all() for element in b3) else 0
 
+            CBP = "b'{0}{1}{2}{3}'".format(bit1,bit2,bit3,bit4)
+            
             #print("block0",b0,"block1",b1,"block2",b2,"block3",b3)
-            macroblock = Macroblock(macroAddrX, macroAddrY, macroType,vx , vy, imgYCC, b0, b1, b2, b3)
+            macroblock = Macroblock(macroAddrX, macroAddrY, macroType,vx , vy, CBP, b0, b1, b2, b3)
             macroblocks.append(macroblock)
     return macroblocks
 
