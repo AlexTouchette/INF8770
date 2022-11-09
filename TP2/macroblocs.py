@@ -123,7 +123,11 @@ def get_macroblocks(image, index):
 
             # Définition du vx et vy:
             # Still need to figure that out lol
-            vector, diff_block = compare_macroblocks(index,x,y)
+            if macroType == 'P':
+                vector, diff_block = compare_macroblocks(index,x,y)
+            else:
+                vector = (0,0) 
+                diff_block = frames[index][x:x+16, y:y+16] 
             
             vx = vector[0]
             vy = vector[1]
@@ -143,11 +147,25 @@ def get_macroblocks(image, index):
             bit4 = 1 if all((element == [0,0,0]).all() for element in b3) else 0
 
             CBP = "b'{0}{1}{2}{3}'".format(bit1,bit2,bit3,bit4)
-            
+
             #print("block0",b0,"block1",b1,"block2",b2,"block3",b3)
             macroblock = Macroblock(macroAddrX, macroAddrY, macroType,vx , vy, CBP, b0, b1, b2, b3)
             macroblocks.append(macroblock)
     return macroblocks
+
+################################## DECODE MACROBLOCK ####################################   
+# def decode_macroblocks(macroblocks,index):
+#     macrocblocksTrameI = total_macroblocks[0]
+#     b0_trame_I = 
+#     image = []
+#     for macroblock in macroblocks:
+        
+        
+        
+        
+
+
+
 
 ################################## CREATE FRAMES LISTE ####################################     
 frames =[]
@@ -156,16 +174,14 @@ for i in range(210,225):
     #frame = cv.imread("TP2/test/frame%d.jpg" % i) 
     frame = cv.imread("TP2/framesTest/frame%d.jpg" % i) 
     frames.append(frame)       
-
 ################################## MAIN ####################################   
-macroblocks = []
+total_macroblocks = []
 
-# for i in range(15):
-#     frame = cv.imread("FrameSeq1/frame%d.jpg" % i)
-#     macroblocks.append(get_macroblocks(frame, i))
-#     #print(macroblocks[i][0])
+for i in range(len(frames)):
+    total_macroblocks.append(get_macroblocks(frames[i], i))
 
-get_macroblocks(frames[1], 1)
-
+# for macroblocks in total_macroblocks:
+#     decode_macroblocks(macroblocks)
+decode_macroblocks(total_macroblocks[1],index)
 
 
