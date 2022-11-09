@@ -2,29 +2,13 @@
 import numpy as np
 import cv2 as cv
 
-greyscale = 256
-
-class Macroblock:
-    #Doit ajouter vx, vy
-    def __init__(self, x, y, type, CBP, b0, b1, b2, b3):
-        self.x = x
-        self.y = y
-        self.type = type
-        #self.vx = vx
-        #self.vy = vy
-        self.CBP = CBP
-        self.b0 = b0
-        self.b1 = b1
-        self.b2 = b2
-        self.b3 = b3
-    
 
 def get_frames(start_time, end_time):
+    
     success=True
+    
     # read video 
     vidcap = cv.VideoCapture('TP2/bouncing_dvd_logo_1.mp4') 
-
-    vidcap = cv.VideoCapture('bouncing_dvd_logo_1.mp4')
 
     # get number of frames per sec ()
     fps = vidcap.get(cv.CAP_PROP_FPS)
@@ -47,10 +31,40 @@ def get_frames(start_time, end_time):
         count += 1
 
 # get frames from 0.0 to 0.5 sec
-get_frames(0.0,0.5)
+#get_frames(0.0,0.5)
 
 # get frames from 3.0 to 3.5 sec
-get_frames(3.0,3.5)
+#get_frames(3.0,3.5)
+
+greyscale = 256
+frames =[]
+class Macroblock:
+    #Doit ajouter vx, vy
+    def __init__(self, x, y, type, CBP, b0, b1, b2, b3):
+        self.x = x
+        self.y = y
+        self.type = type
+        #self.vx = vx
+        #self.vy = vy
+        self.CBP = CBP
+        self.b0 = b0
+        self.b1 = b1
+        self.b2 = b2
+        self.b3 = b3
+
+for i in range(15):
+    frame = cv.imread("TP2/FrameSeq1/frame%d.jpg" % i) 
+    frames.append(frame)
+   
+def compare_macroblocks(index,x,y):
+    for vx in range(4):
+        for vy in range(4):
+            diff = frames[index][x+vx:x+16+vx, y+vy:y+16+vy] - frame[index-1][x:x+16, y:y+16]
+            DMaMb = pow(diff,2)
+            result = sum(DMaMb[vx][vx])
+            print(result)
+            #print(DMaMb)
+            if result <1: return (vx,vy)  
 
 def get_macroblocks(image, index):
     
@@ -73,6 +87,7 @@ def get_macroblocks(image, index):
 
             # Définition du vx et vy:
             # Still need to figure that out lol
+            print(compare_macroblocks(index,x,y))
 
 
             # Définition du CPB (4:0:0):
@@ -85,18 +100,25 @@ def get_macroblocks(image, index):
             b2 = image[x:x+deltaMoitier, y+deltaMoitier:y+deltaPlein]               # Milieu gauche à milieu bas
             b3 = image[x+deltaMoitier:x+deltaPlein, y+deltaMoitier:y+deltaPlein]    # Milieu à coin inférieur droit
 
+            #print("block0",b0,"block1",b1,"block2",b2,"block3",b3)
             macroblock = Macroblock(macroAddrX, macroAddrY, macroType, imgYCC, b0, b1, b2, b3)
             macroblocks.append(macroblock)
     return macroblocks
 
 
+        
+        
 
+#print(compare_macroblocks(1,0,0))
 macroblocks = []
 
-for i in range(15):
-    frame = cv.imread("FrameSeq1/frame%d.jpg" % i)
-    macroblocks.append(get_macroblocks(frame, i))
-    #print(macroblocks[i][0])
 
+
+# for i in range(15):
+#     frame = cv.imread("FrameSeq1/frame%d.jpg" % i)
+#     macroblocks.append(get_macroblocks(frame, i))
+#     #print(macroblocks[i][0])
+
+get_macroblocks(frames[1], 1)
 
 
