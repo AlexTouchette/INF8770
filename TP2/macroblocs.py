@@ -57,14 +57,29 @@ for i in range(15):
     frames.append(frame)
    
 def compare_macroblocks(index,x,y):
-    for vx in range(4):
-        for vy in range(4):
-            diff = frames[index][x+vx:x+16+vx, y+vy:y+16+vy] - frame[index-1][x:x+16, y:y+16]
-            DMaMb = pow(diff,2)
-            result = sum(DMaMb[vx][vx])
-            print(result)
-            #print(DMaMb)
-            if result <1: return (vx,vy)  
+    h = frames[index].shape[0]
+    w = frames[index].shape[1]
+    
+    #on commence par comparer avec le marcobloc de la trame t-1 à la meme position 
+    # DMaMb1 = frames[index][x:x+16, y:y+16] - frames[index-1][x:x+16, y:y+16]
+    # result1 = sum(DMaMb1[0][0])
+    # print("result1",result1)
+    # if result1==0:return (0,0) 
+    
+    for vx in range(-4,4):
+        for vy in range(-4,4):
+            if((x+16+vx<w and y+16+vy<h)and (x+vx>0 and y+vy>0)):
+                DMaMb = frames[index][x:x+16, y:y+16] - frames[index-1][x+vx:x+16+vx, y+vy:y+16+vy]
+                result = sum(DMaMb[vx][vx])
+                print('result',result)
+                #print(DMaMb)
+                if result <800: 
+                    return (vx,vy) 
+                else:
+                    print("X : ",x," Y : ",y)
+                    #print(DMaMb)
+
+#print(compare_macroblocks(1,0,1)) 
 
 def get_macroblocks(image, index):
     
@@ -87,7 +102,7 @@ def get_macroblocks(image, index):
 
             # Définition du vx et vy:
             # Still need to figure that out lol
-            print(compare_macroblocks(index,x,y))
+            print("vector",compare_macroblocks(index,x,y))
 
 
             # Définition du CPB (4:0:0):
@@ -120,5 +135,6 @@ macroblocks = []
 #     #print(macroblocks[i][0])
 
 get_macroblocks(frames[1], 1)
+
 
 
