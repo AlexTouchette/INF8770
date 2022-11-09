@@ -3,6 +3,7 @@ import numpy as np
 import cv2 as cv
 
 
+################################## GET FRAMES ####################################
 def get_frames(start_time, end_time):
     
     success=True
@@ -39,68 +40,53 @@ def get_frames(start_time, end_time):
 # get frames from 3.0 to 3.5 sec
 #get_frames(3.0,3.5)
 
-greyscale = 256
-frames =[]
+
+################################## Macrobblock class ####################################
+
 class Macroblock:
     #Doit ajouter vx, vy
-    def __init__(self, x, y, type, CBP, b0, b1, b2, b3):
+    def __init__(self, x, y, type, vx, vy, CBP, b0, b1, b2, b3):
         self.x = x
         self.y = y
         self.type = type
-        #self.vx = vx
-        #self.vy = vy
+        self.vx = vx
+        self.vy = vy
         self.CBP = CBP
         self.b0 = b0
         self.b1 = b1
         self.b2 = b2
         self.b3 = b3
 
-for i in range(210,225):
-    #frame = cv.imread("TP2/FrameSeq1/frame%d.jpg" % i) 
-    #frame = cv.imread("TP2/test/frame%d.jpg" % i) 
-    frame = cv.imread("TP2/framesTest/frame%d.jpg" % i) 
-    frames.append(frame)
-
+################################## GET MACROBLOCK VECTORS ####################################
 def compare_macroblocks(index,x,y):
     h = frames[index].shape[0]
     w = frames[index].shape[1]
-    
-    #on commence par comparer avec le marcobloc de la trame t-1 à la meme position 
-    # DMaMb1 = frames[index][x:x+16, y:y+16] - frames[index-1][x:x+16, y:y+16]
-    # result1 = sum(DMaMb1[0][0])
-    # print("result1",result1)
-    # if result1==0:return (0,0) 
    
     diff_current = cv.subtract(frames[index][x:x+16, y:y+16],frames[index-1][x:x+16, y:y+16]) 
     err_current = np.sum(diff_current**2)
     mse_current = err_current/(float(h*w))
-    for vx in range(1,6):
-        for vy in range(1,6):
-            if((x+16+vx<w and y+16+vy<h)):
-                print('x et y',vx,vy)
-                
-                diff = cv.subtract(frames[index][x:x+16, y:y+16],frames[index-1][x+vx:x+16+vx, y+vy:y+16+vy])
-                err = np.sum(diff**2)
-                mse = err/(float(h*w))
-                print('mse',mse)
-                print('MSE CURRENT',mse_current)
-                if mse < mse_current :
-                    return(vx,vy)
+    
+    min_mse = mse_current
+    vector = (0,0)
+    for vx in range(-6,6):
+        for vy in range(-6,6):
+            if((x+16+vx<w and y+16+vy<h)and (x+vx>0 and y+vy>0)):
+                if len(frames[index][x:x+16, y:y+16]) == len(frames[index-1][x+vx:x+16+vx, y+vy:y+16+vy]) :
+                    diff = cv.subtract(frames[index][x:x+16, y:y+16],frames[index-1][x+vx:x+16+vx, y+vy:y+16+vy])
+                    err = np.sum(diff**2)
+                    mse = err/(float(h*w))
+                    
+                    if mse < min_mse :
+                        # print('x et y',vx,vy)
+                        # print('mse',mse)
+                        # print('MSE min',min_mse)
+                        min_mse = mse
+                        vector = (vx,vy)
+                        # print('VECTOR', vector)
+                 
+    return vector
 
- 
-        #         DMaMb = frames[index][x:x+16, y:y+16] - frames[index-1][x+vx:x+16+vx, y+vy:y+16+vy]
-        #         result = sum(DMaMb[vx][vx])
-        #         print('result',result)
-        #         #print(DMaMb)
-        #         if result <4: 
-        #             print('less then')
-        #             return (vx,vy) 
-        #         else:
-        #             print("X : ",x," Y : ",y)
-        #             return (vx,vy)
-        #             #print(DMaMb)
-        # return (vx,vy)
-#print(compare_macroblocks(1,0,1)) 
+################################## CREATE MACROBLOCKS ####################################
 
 def get_macroblocks(image, index):
     
@@ -123,8 +109,10 @@ def get_macroblocks(image, index):
 
             # Définition du vx et vy:
             # Still need to figure that out lol
-            print("vector",compare_macroblocks(index,x,y))
-
+            vector = compare_macroblocks(index,x,y)
+            print(vector)
+            vx = vector[0]
+            vy = vector[1]
 
             # Définition du CPB (4:0:0):
             #J'ai mit 4 pour l'instant mais je suis vraiment pas certain
@@ -137,18 +125,20 @@ def get_macroblocks(image, index):
             b3 = image[x+deltaMoitier:x+deltaPlein, y+deltaMoitier:y+deltaPlein]    # Milieu à coin inférieur droit
 
             #print("block0",b0,"block1",b1,"block2",b2,"block3",b3)
-            macroblock = Macroblock(macroAddrX, macroAddrY, macroType, imgYCC, b0, b1, b2, b3)
+            macroblock = Macroblock(macroAddrX, macroAddrY, macroType,vx , vy, imgYCC, b0, b1, b2, b3)
             macroblocks.append(macroblock)
     return macroblocks
 
+################################## CREATE FRAMES LISTE ####################################     
+frames =[]
+for i in range(210,225):
+    #frame = cv.imread("TP2/FrameSeq1/frame%d.jpg" % i) 
+    #frame = cv.imread("TP2/test/frame%d.jpg" % i) 
+    frame = cv.imread("TP2/framesTest/frame%d.jpg" % i) 
+    frames.append(frame)       
 
-        
-        
-
-#print(compare_macroblocks(1,0,0))
+################################## MAIN ####################################   
 macroblocks = []
-
-
 
 # for i in range(15):
 #     frame = cv.imread("FrameSeq1/frame%d.jpg" % i)
