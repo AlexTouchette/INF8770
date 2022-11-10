@@ -1,6 +1,8 @@
 # Première étape: Division de la trame en macroblocs --------------------
 import numpy as np
 import cv2 as cv
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 ################################## GET FRAMES ####################################
@@ -159,12 +161,6 @@ def get_macroblocks(image, index):
 #     b0_trame_I = 
 #     image = []
 #     for macroblock in macroblocks:
-        
-        
-        
-        
-
-
 
 
 ################################## CREATE FRAMES LISTE ####################################     
@@ -173,15 +169,30 @@ for i in range(210,225):
     #frame = cv.imread("TP2/FrameSeq1/frame%d.jpg" % i) 
     #frame = cv.imread("TP2/test/frame%d.jpg" % i) 
     frame = cv.imread("TP2/framesTest/frame%d.jpg" % i) 
-    frames.append(frame)       
+    frames.append(frame)  
+
+
 ################################## MAIN ####################################   
 total_macroblocks = []
 
 for i in range(len(frames)):
+    print("Now on frame %d" % i)
     total_macroblocks.append(get_macroblocks(frames[i], i))
+    
 
 # for macroblocks in total_macroblocks:
 #     decode_macroblocks(macroblocks)
-decode_macroblocks(total_macroblocks[1],index)
+#decode_macroblocks(total_macroblocks[1],index)
 
 
+################################## CREATE PLOT ####################################
+#vectors = []
+#frameA = total_macroblocks[8]
+
+#for i in range(0, len(frameA)):
+#    vectorNorm = np.sqrt(frameA[i].vx**2 + frameA[i].vy**2)
+#    vectors.append(vectorNorm)
+
+#ax = sns.heatmap(np.array(vectors).reshape(45, 80), linewidth=0.3)
+#plt.title("Heatmap pour la trame numéro 219")
+#plt.show()
