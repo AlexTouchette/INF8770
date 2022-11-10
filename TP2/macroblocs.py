@@ -3,6 +3,7 @@ import numpy as np
 import cv2 as cv
 import matplotlib.pyplot as plt
 import seaborn as sns
+import time
 
 
 
@@ -211,19 +212,29 @@ def decode_macroblocks(macroblocks,index):
 ################################## MAIN ####################################   
 frames =[]
 
-for i in range(285,300):
-    #frame = cv.imread("TP2/FrameSeq1/frame%d.jpg" % i) 
-    frame = cv.imread("TP2/FrameSeq2/frame%d.jpg" % i) 
+for i in range(210,225):
+    frame = cv.imread("FrameSeq1/frame%d.jpg" % i) 
+    #frame = cv.imread("TP2/FrameSeq2/frame%d.jpg" % i) 
     frames.append(frame) 
 
+startencode = time.time()
 total_macroblocks = []
 for i in range(len(frames)):
     print("Now on frame %d" % i)
     total_macroblocks.append(get_macroblocks(frames[i], i))
 
+endencode = time.time()
+print(endencode - startencode)
+
+
+startdecode = time.time()
 decoded_frames =[]
 for i in range(len(total_macroblocks)) :
+    print("Now decoding frame %d" % i)
     decode_macroblocks(total_macroblocks[i],i)
+enddecode = time.time()
+
+print(enddecode - startdecode)
 
 for i in range(15):
     cv.imwrite("encoded_frame%d.jpg" % i, decoded_frames[i])
