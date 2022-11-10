@@ -1,6 +1,7 @@
 # Première étape: Division de la trame en macroblocs --------------------
 import numpy as np
 import cv2 as cv
+import matplotlib.pyplot as py
 
 
 ################################## GET FRAMES ####################################
@@ -133,38 +134,78 @@ def get_macroblocks(image, index):
             vy = vector[1]
 
             # Définition des 4 blocs Y:
-            b0 = diff_block[0:deltaMoitier, 0:deltaMoitier]                          # Coin supérieur gauche à milieu
-            b1 = diff_block[deltaMoitier:deltaPlein, 0:deltaMoitier]               # Milieu haut à milieu droit
-            b2 = diff_block[0:deltaMoitier, deltaMoitier:deltaPlein]               # Milieu gauche à milieu bas
+            b0 = diff_block[0:deltaMoitier, 0:deltaMoitier]                      # Coin supérieur gauche à milieu
+            b1 = diff_block[deltaMoitier:deltaPlein, 0:deltaMoitier]             # Milieu haut à milieu droit
+            b2 = diff_block[0:deltaMoitier, deltaMoitier:deltaPlein]             # Milieu gauche à milieu bas
             b3 = diff_block[deltaMoitier:deltaPlein, deltaMoitier:deltaPlein]    # Milieu à coin inférieur droit
 
             # Définition du CPB (4:0:0):
             #J'ai mit 4 pour l'instant mais je suis vraiment pas certain
+            # 1 si aucun codage requis 0 sinon
 
             bit1 = 1 if all((element == [0,0,0]).all() for element in b0) else 0
             bit2 = 1 if all((element == [0,0,0]).all() for element in b1) else 0
             bit3 = 1 if all((element == [0,0,0]).all() for element in b2) else 0
             bit4 = 1 if all((element == [0,0,0]).all() for element in b3) else 0
 
-            CBP = "b'{0}{1}{2}{3}'".format(bit1,bit2,bit3,bit4)
+            CBP = "{0},{1},{2},{3}".format(bit1,bit2,bit3,bit4)
 
             #print("block0",b0,"block1",b1,"block2",b2,"block3",b3)
             macroblock = Macroblock(macroAddrX, macroAddrY, macroType,vx , vy, CBP, b0, b1, b2, b3)
             macroblocks.append(macroblock)
     return macroblocks
 
-################################## DECODE MACROBLOCK ####################################   
-# def decode_macroblocks(macroblocks,index):
-#     macrocblocksTrameI = total_macroblocks[0]
-#     b0_trame_I = 
-#     image = []
-#     for macroblock in macroblocks:
-        
-        
-        
-        
+################################## DECODE MACROBLOCK I ####################################   
+def decdecode_macroblocks_I(macroblocks_I,index):
+    h =720 
+    w = 1280
+    deltaPlein = 16
+    deltaMoitier = 8
+    image  = np.zeros((h,w,3))
+    for macroblock in macroblocks_I:
+        x = macroblock.x
+        y = macroblock.y
+        vx = macroblock.vx
+        vy = macroblock.vy
+
+        image[x:x+deltaMoitier, y:y+deltaMoitier] = macroblock.b0 
+        image[x+deltaMoitier:x+deltaPlein, y:y+deltaMoitier]  = macroblock.b1
+        image[x:x+deltaMoitier, y+deltaMoitier:y+deltaPlein]  = macroblock.b2
+        image[x+deltaMoitier:x+deltaPlein, y+deltaMoitier:y+deltaPlein] = macroblock.b3
+    decoded_frames.append(image)
 
 
+################################## DECODE MACROBLOCK P ####################################  
+def decode_macroblocks_p(macroblocks,index):
+    macrocblocksTrameI = total_macroblocks[0]
+    h =720 
+    w = 1280
+    deltaPlein = 16
+    deltaMoitier = 8
+    image  = np.zeros((h,w,3))
+
+    for macroblock, macroblockI  in zip(macroblocks,macrocblocksTrameI):
+        x = macroblock.x
+        y = macroblock.y
+        vx = macroblock.vx
+        vy = macroblock.vy
+        CBP =  macroblock.CBP
+        CBP = CBP.split(',')
+          
+        image[x:x+deltaMoitier, y:y+deltaMoitier] = macroblockI.b0 if CBP[0] == '1'  else  decoded_frames[index-1][x+vx:x+deltaMoitier+vx, y+vy:y+deltaMoitier+vy]                   
+        image[x+deltaMoitier:x+deltaPlein, y:y+deltaMoitier]  = macroblockI.b1 if CBP[1] == '1'  else  decoded_frames[index-1][x+deltaMoitier+vx:x+deltaPlein+vx, y+vy:y+deltaMoitier+vy]                               
+        image[x:x+deltaMoitier, y+deltaMoitier:y+deltaPlein]  = macroblockI.b2  if CBP[2] == '1'  else  decoded_frames[index-1][x+vx:x+deltaMoitier+vx, y+deltaMoitier+vy:y+deltaPlein+vy]                                
+        image[x+deltaMoitier:x+deltaPlein, y+deltaMoitier:y+deltaPlein] = macroblockI.b3 if CBP[3] == '1'  else decoded_frames[index-1][x+deltaMoitier+vx:x+deltaPlein+vx, y+deltaMoitier+vy:y+deltaPlein+vy]                   
+        
+    decoded_frames.append(image) 
+
+################################## DECODE MACROBLOCK  ####################################     
+def decode_macroblocks(macroblocks,index):
+    if index == 0 :
+        decdecode_macroblocks_I(macroblocks,index)
+    else:
+        decode_macroblocks_p(macroblocks,index)
+          
 
 
 ################################## CREATE FRAMES LISTE ####################################     
@@ -173,15 +214,19 @@ for i in range(210,225):
     #frame = cv.imread("TP2/FrameSeq1/frame%d.jpg" % i) 
     #frame = cv.imread("TP2/test/frame%d.jpg" % i) 
     frame = cv.imread("TP2/framesTest/frame%d.jpg" % i) 
-    frames.append(frame)       
+    frames.append(frame) 
+
+
 ################################## MAIN ####################################   
 total_macroblocks = []
-
 for i in range(len(frames)):
     total_macroblocks.append(get_macroblocks(frames[i], i))
 
-# for macroblocks in total_macroblocks:
-#     decode_macroblocks(macroblocks)
-decode_macroblocks(total_macroblocks[1],index)
 
+decoded_frames =[]
+for i in range(len(total_macroblocks)) :
+    decode_macroblocks(total_macroblocks[i],i)
+
+for i in range(15):
+    cv.imwrite("encoded_frame%d.jpg" % i, decoded_frames[1])
 
