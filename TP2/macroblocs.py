@@ -12,8 +12,6 @@ def get_frames(start_time, end_time):
     success=True
     
     # read video 
-    #vidcap = cv.VideoCapture('TP2/bouncing_dvd_logo_1.mp4') 
-    #vidcap = cv.VideoCapture('TP2/test.mp4')
     vidcap = cv.VideoCapture('TP2/bouncing_ball.mp4') 
 
     # get number of frames per sec ()
@@ -39,7 +37,7 @@ def get_frames(start_time, end_time):
 # get frames from 0.0 to 0.5 sec
 #get_frames(0.0,0.5)
 #get_frames(7.0,7.5)
-
+#get_frames(9.5, 10)
 # get frames from 3.0 to 3.5 sec
 #get_frames(3.0,3.5)
 
@@ -163,7 +161,7 @@ def decdecode_macroblocks_I(macroblocks_I,index):
     w = 1280
     deltaPlein = 16
     deltaMoitier = 8
-    image  = np.zeros((h,w,3))
+    image = np.zeros((h,w,3))
     for macroblock in macroblocks_I:
         x = macroblock.x
         y = macroblock.y
@@ -179,12 +177,12 @@ def decdecode_macroblocks_I(macroblocks_I,index):
 
 ################################## DECODE MACROBLOCK P ####################################  
 def decode_macroblocks_p(macroblocks,index):
-    macrocblocksTrameI = total_macroblocks[0]
+    macrocblocksTrameI = total_macroblocks[index - 1]
     h =720 
     w = 1280
     deltaPlein = 16
     deltaMoitier = 8
-    image  = np.zeros((h,w,3))
+    image = np.zeros((h,w,3))
 
     for macroblock, macroblockI  in zip(macroblocks,macrocblocksTrameI):
         x = macroblock.x
@@ -194,10 +192,10 @@ def decode_macroblocks_p(macroblocks,index):
         CBP =  macroblock.CBP
         CBP = CBP.split(',')
           
-        image[x:x+deltaMoitier, y:y+deltaMoitier] = macroblockI.b0 if CBP[0] == '1'  else  decoded_frames[index-1][x+vx:x+deltaMoitier+vx, y+vy:y+deltaMoitier+vy]                   
-        image[x+deltaMoitier:x+deltaPlein, y:y+deltaMoitier]  = macroblockI.b1 if CBP[1] == '1'  else  decoded_frames[index-1][x+deltaMoitier+vx:x+deltaPlein+vx, y+vy:y+deltaMoitier+vy]                               
-        image[x:x+deltaMoitier, y+deltaMoitier:y+deltaPlein]  = macroblockI.b2  if CBP[2] == '1'  else  decoded_frames[index-1][x+vx:x+deltaMoitier+vx, y+deltaMoitier+vy:y+deltaPlein+vy]                                
-        image[x+deltaMoitier:x+deltaPlein, y+deltaMoitier:y+deltaPlein] = macroblockI.b3 if CBP[3] == '1'  else decoded_frames[index-1][x+deltaMoitier+vx:x+deltaPlein+vx, y+deltaMoitier+vy:y+deltaPlein+vy]                   
+        image[x:x+deltaMoitier, y:y+deltaMoitier] = macroblockI.b0 if CBP[0] == '0'  else  decoded_frames[index-1][x+vx:x+deltaMoitier+vx, y+vy:y+deltaMoitier+vy]                   
+        image[x+deltaMoitier:x+deltaPlein, y:y+deltaMoitier]  = macroblockI.b1 if CBP[1] == '0'  else  decoded_frames[index-1][x+deltaMoitier+vx:x+deltaPlein+vx, y+vy:y+deltaMoitier+vy]                               
+        image[x:x+deltaMoitier, y+deltaMoitier:y+deltaPlein]  = macroblockI.b2  if CBP[2] == '0'  else  decoded_frames[index-1][x+vx:x+deltaMoitier+vx, y+deltaMoitier+vy:y+deltaPlein+vy]                                
+        image[x+deltaMoitier:x+deltaPlein, y+deltaMoitier:y+deltaPlein] = macroblockI.b3 if CBP[3] == '0'  else decoded_frames[index-1][x+deltaMoitier+vx:x+deltaPlein+vx, y+deltaMoitier+vy:y+deltaPlein+vy]                   
         
     decoded_frames.append(image) 
 
@@ -210,26 +208,25 @@ def decode_macroblocks(macroblocks,index):
           
 
 
-################################## CREATE FRAMES LISTE ####################################     
+################################## MAIN ####################################   
 frames =[]
-for i in range(210,225):
+
+for i in range(285,300):
     #frame = cv.imread("TP2/FrameSeq1/frame%d.jpg" % i) 
-    #frame = cv.imread("TP2/test/frame%d.jpg" % i) 
-    frame = cv.imread("TP2/framesTest/frame%d.jpg" % i) 
+    frame = cv.imread("TP2/FrameSeq2/frame%d.jpg" % i) 
     frames.append(frame) 
 
-
-################################## MAIN ####################################   
 total_macroblocks = []
 for i in range(len(frames)):
     print("Now on frame %d" % i)
     total_macroblocks.append(get_macroblocks(frames[i], i))
-    
 
-# for macroblocks in total_macroblocks:
-#     decode_macroblocks(macroblocks)
-#decode_macroblocks(total_macroblocks[1],index)
+decoded_frames =[]
+for i in range(len(total_macroblocks)) :
+    decode_macroblocks(total_macroblocks[i],i)
 
+for i in range(15):
+    cv.imwrite("encoded_frame%d.jpg" % i, decoded_frames[i])
 
 ################################## CREATE PLOT ####################################
 #vectors = []
@@ -238,14 +235,6 @@ for i in range(len(frames)):
 #for i in range(0, len(frameA)):
 #    vectorNorm = np.sqrt(frameA[i].vx**2 + frameA[i].vy**2)
 #    vectors.append(vectorNorm)
-
-decoded_frames =[]
-for i in range(len(total_macroblocks)) :
-    decode_macroblocks(total_macroblocks[i],i)
-
-for i in range(15):
-    cv.imwrite("encoded_frame%d.jpg" % i, decoded_frames[1])
-
 #ax = sns.heatmap(np.array(vectors).reshape(45, 80), linewidth=0.3)
 #plt.title("Heatmap pour la trame numéro 219")
 #plt.show()
