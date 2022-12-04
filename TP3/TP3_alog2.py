@@ -1,5 +1,6 @@
 import cv2 
 import numpy as np 
+from operator import itemgetter
 
 h = 900
 w = 500
@@ -31,40 +32,36 @@ def get_sum_convolution(img):
     sum_conv = sum(convolution)
     return sum_conv
 
-# def get_best_match(dic):
-#     for i
-
+def get_best_matches(dic,n):
+    best_matches = dict(sorted(dic.items(), key = itemgetter(1))[:n]) 
+    return best_matches
+           
+        
+        
+    
 dic ={}
 for i in range (1, 9):
     print()
     print("IMAGE REQ  ",i)
     print()
     img_req = cv2.imread("TP3/images_requete/requete_%d.png" % (i) ,cv2.IMREAD_GRAYSCALE) 
+    #img_req = cv2.imread("TP3/images_requete/requete_1.png" ,cv2.IMREAD_GRAYSCALE) 
     img_req_res = cv2.resize(img_req, (h,w))
     sum_conv_req = get_sum_convolution(img_req_res) 
     for cat in cats :
-        dic[cat]={}
         for num in range(1,6):
             
-            print("IMAGE DB",cat,num )
-            print("req sum",sum_conv_req)
+            # print("IMAGE DB",cat,num )
+            # print("req sum",sum_conv_req)
 
             img_bd = Read_db_images(cat, num)  
             sum_conv_bd = get_sum_convolution(img_bd)
-            print("Sum of Convolution: ",sum_conv_bd)
-            print()
+            #print("Sum of Convolution: ",sum_conv_bd)
             diff = abs(sum_conv_req-sum_conv_bd)
-            print("diff",diff)
+            #print("diff",diff)
             
-            
-            dic[cat][num] = diff 
+            key = "{0}_{1}".format(cat,num)
+            dic[key] = diff 
 
-    print(dic)
-        
-
-        
-
-
-    
-     
+    print(get_best_matches(dic,3))        
 
