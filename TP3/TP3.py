@@ -1,8 +1,8 @@
 import numpy as np
-import matplotlib.pyplot as plt
-plt.rcParams['image.cmap'] = 'gray' # Choix de la color map par défaut, ne pas modifier
-import matplotlib
-matplotlib.rcParams['figure.figsize'] = (15.0, 10.0) # Default figure size, you can modify this if you need to.
+#import matplotlib.pyplot as plt
+#plt.rcParams['image.cmap'] = 'gray' # Choix de la color map par défaut, ne pas modifier
+#import matplotlib
+#matplotlib.rcParams['figure.figsize'] = (15.0, 10.0) # Default figure size, you can modify this if you need to.
 import cv2
 
 cats  = ["banane","plancheneige","planchesurf","pomme","tasse","zebre"]
@@ -17,8 +17,13 @@ def plot_histogram(img):
 def Read_db_images(name, index):
     img = cv2.imread("TP3/banque_images/{0}_{1}.png".format(name,index))
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    # will have to resize image
+    #img_rgb = cv2.resize(img_rgb, (h,w))
+
     return img_rgb
 
+############ algo 1 ##################
 
 def Distance_Euclidienne(hist_req, hist_comp):
     result=0
@@ -45,5 +50,6 @@ for i in range (1, 9):
             result_R= Distance_Euclidienne(hist_req_R,hist_comp_R)
             print(result_B,result_G,result_R)
 
+############ algo 2 ##################
 
         
