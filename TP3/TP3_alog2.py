@@ -39,8 +39,7 @@ for i in range (1, 9):
     print()
     print("IMAGE REQ  ",i)
     print()
-    #img_req = cv2.imread("TP3/images_requete/requete_%d.png" % (i) ,cv2.IMREAD_GRAYSCALE) 
-    img_req = cv2.imread("TP3/images_requete/requete_1.png" ,cv2.IMREAD_GRAYSCALE) 
+    img_req = cv2.imread("TP3/images_requete/requete_%d.png" % (i) ,cv2.IMREAD_GRAYSCALE) 
     img_req_res = cv2.resize(img_req, (h,w))
     sum_conv_req = get_sum_convolution(img_req_res) 
     for cat in cats :
