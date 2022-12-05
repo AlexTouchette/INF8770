@@ -1,6 +1,7 @@
 import cv2 
 import numpy as np 
 from operator import itemgetter
+import time
 
 names = ["banane","plancheneige","planchesurf","pomme","tasse","zebre"]
 reference_meds_b = []
@@ -37,9 +38,9 @@ def plot_histogram(img):
         
 def Read_db_images(folder, name, index):
     img = cv2.imread("{0}/{1}_{2}.png".format(folder, name,index))
-    width, height, chanels = img.shape
-    cropped_image = img[int((width/2)-100):int((width/2)+100), int((height/2)-100):int((height/2)+100)]
-    return cropped_image
+    #width, height, chanels = img.shape
+    #cropped_image = img[int((width/2)-100):int((width/2)+100), int((height/2)-100):int((height/2)+100)]
+    return img
 
 def get_type(index):
     if index >= 0 and index < 5:
@@ -66,17 +67,19 @@ def get_best_type(diffs):
     return smallest_diff
 
 if __name__ == "__main__":
-    cropped_images = []
+    start = time.time()
+
+    reference_images = []
     request_images = []
 
     #We read and crop the pictures
     for name in names:
         for i in range(1,6):
-                cropped_images.append(Read_db_images("banque_images", name, i))
+                reference_images.append(Read_db_images("banque_images", name, i))
     
     #We get the images histograms and calculate their medians
     for i in range(30):
-        b, g, r = plot_histogram(cropped_images[i])
+        b, g, r = plot_histogram(reference_images[i])
         reference_meds_b.append(np.median(b))
         reference_meds_g.append(np.median(g))
         reference_meds_r.append(np.median(r))
@@ -116,10 +119,16 @@ if __name__ == "__main__":
         types.append(get_type(index_g))
         types.append(get_type(index_r))
         best_type = get_best_type([diffs_b, diffs_g, diffs_r])
-            
+        if best_type == diffs_b:
+            types.append(get_type(index_b))   
+        if best_type == diffs_g:
+            types.append(get_type(index_g))   
+        if best_type == diffs_r:
+            types.append(get_type(index_r))   
         print(types)
 
-
+    end = time.time()
+    print(end - start)
 
     #Debug to see image
     #img = cv2.imread("banque_images/pomme_2.png")
